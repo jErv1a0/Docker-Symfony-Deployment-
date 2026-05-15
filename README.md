@@ -297,7 +297,7 @@ MYSQL_ROOT_PASSWORD=<strong-random-password>
 
 - **Local (.env file)**: `APP_ENV=dev` for Symfony debug and dev features
 - **Docker containers (Dockerfile)**: `APP_ENV=prod` and `APP_DEBUG=0` (hardcoded for security)
-- **Railroad & cloud platforms**: Override with environment variables to use production mode automatically
+- **Railway & cloud platforms**: Override with environment variables to use production mode automatically
 
 ### Notes
 
@@ -342,21 +342,17 @@ Recommended platform:
 
 ### Step 3: Configure Railway Services
 
-Railway will automatically detect the Docker Compose setup. Configure the services:
+Railway deploys the repository from GitHub, but the local `docker-compose.yaml` is mainly for development. On Railway, deploy the web application with the Dockerfile and connect it to a MySQL database service or external MySQL instance.
 
-**Web (Nginx) Service:**
-- Port: 80 (Railway assigns public URL automatically)
-- No special environment variables needed
+**Web/App Service:**
+- Railway will build from the repository and run the container
+- Use the platform's assigned public URL
+- Keep `APP_ENV=prod` and `APP_DEBUG=0`
 
-**App (PHP-FPM) Service:**
-- Internal only (no public port)
-- Depends on: database service
-- Environment variables (see table below)
-
-**Database (MySQL) Service:**
-- Use Railway's built-in MySQL service OR from docker-compose
-- Database: `app_production`
-- User: `app_user`
+**Database Service:**
+- Use Railway's MySQL service if available, or another MySQL provider
+- Set the database name, user, and password to match the variables below
+- Make sure the app can reach the database using Railway-provided host/port values
 
 ### Step 4: Set Environment Variables in Railway
 
@@ -399,9 +395,9 @@ Click on the **App** service and go to **Variables**. Add these:
 - Check if migrations ran successfully
 
 **Database connection error:**
-- Verify MYSQL_* environment variables match docker-compose.yaml expectations
+- Verify the Railway database credentials match the values in your app variables
 - Check database service status in Railway dashboard
-- Ensure database service dependencies are configured correctly
+- Ensure the app is using the database host and port provided by Railway or your external provider
 
 **Application takes too long to start:**
 - The container waits up to 60 seconds for database connectivity
