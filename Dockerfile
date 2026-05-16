@@ -17,7 +17,7 @@ COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 # Copy dependency manifests first to leverage Docker layer cache.
 COPY composer.json composer.lock symfony.lock* ./
-RUN composer install --no-dev --prefer-dist --no-interaction --no-progress --optimize-autoloader --no-scripts
+RUN composer install --no-dev --prefer-dist --no-interaction --no-progress --optimize-autoloader
 
 # Copy the full project.
 COPY . .
@@ -32,7 +32,7 @@ ENV APP_DEBUG=0
 
 # Build-time safeguard: if vendor is missing for some reason, install dependencies now
 RUN if [ ! -f vendor/autoload.php ]; then \
-        composer install --no-dev --prefer-dist --no-interaction --no-progress --optimize-autoloader --no-scripts; \
+        composer install --no-dev --prefer-dist --no-interaction --no-progress --optimize-autoloader; \
     fi
 
 ENTRYPOINT ["/var/www/html/entrypoint.sh"]
