@@ -15,25 +15,21 @@ RUN apk add --no-cache \
 # Install Composer from the official image.
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
+ENV APP_ENV=prod
+ENV APP_DEBUG=0
+
 # Copy dependency manifests first to leverage Docker layer cache.
 COPY composer.json composer.lock symfony.lock* ./
-RUN composer install --no-dev --prefer-dist --no-interaction --no-progress --optimize-autoloader
 
-# Copy the full project.
+# Copy the full project before Composer runs so Symfony auto-scripts can use bin/console.
 COPY . .
+
+RUN composer install --no-dev --prefer-dist --no-interaction --no-progress --optimize-autoloader
 
 # Ensure runtime folders are writable by php-fpm user.
 RUN mkdir -p var/cache var/log var/share \
  && chown -R www-data:www-data var \
  && chmod +x entrypoint.sh
-
-ENV APP_ENV=prod
-ENV APP_DEBUG=0
-
-# Build-time safeguard: if vendor is missing for some reason, install dependencies now
-RUN if [ ! -f vendor/autoload.php ]; then \
-        composer install --no-dev --prefer-dist --no-interaction --no-progress --optimize-autoloader; \
-    fi
 
 ENTRYPOINT ["/var/www/html/entrypoint.sh"]
 CMD ["php-fpm"]
