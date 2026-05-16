@@ -30,5 +30,10 @@ RUN mkdir -p var/cache var/log var/share \
 ENV APP_ENV=prod
 ENV APP_DEBUG=0
 
+# Build-time safeguard: if vendor is missing for some reason, install dependencies now
+RUN if [ ! -f vendor/autoload.php ]; then \
+        composer install --no-dev --prefer-dist --no-interaction --no-progress --optimize-autoloader --no-scripts; \
+    fi
+
 ENTRYPOINT ["/var/www/html/entrypoint.sh"]
 CMD ["php-fpm"]
