@@ -15,6 +15,7 @@ The application is deployed using:
 - PHP-FPM
 - MySQL
 - Docker Compose
+- Railway or another container platform that provides a `PORT` environment variable
 
 ---
 
@@ -61,6 +62,8 @@ And the container architecture is:
 - web: Nginx reverse proxy on port 8080
 - app: PHP-FPM Symfony application container
 - database: MySQL 8 container on port 3310 (host) / 3306 (container)
+
+For Railway deployments, the `app` container switches to the built-in PHP HTTP server when `PORT` is present, so Railway can reach the application directly on the platform-assigned port.
 
 ---
 
@@ -161,10 +164,20 @@ When the `app` container starts:
 1. Waits for database connection (timeout: ~60 seconds)
 2. Clears Symfony cache for production mode
 3. **Automatically runs database migrations** (Doctrine Migrations)
-4. PHP-FPM becomes ready to handle requests
-5. Nginx routes traffic to PHP-FPM
+4. If `PORT` is set, starts a built-in PHP HTTP server for Railway-style deployments
+5. Otherwise, PHP-FPM becomes ready to handle requests
+6. Nginx routes traffic to PHP-FPM in local Docker Compose
 
 No additional setup is needed—migrations run automatically.
+
+### Railway Deployment
+
+When deploying to Railway:
+
+1. Set the service to use this repository and let Railway build the Dockerfile.
+2. Provide the database and secret environment variables, including `APP_SECRET`, `DATABASE_URL`, `MYSQL_USER`, `MYSQL_PASSWORD`, `MYSQL_DATABASE`, and `MYSQL_ROOT_PASSWORD`.
+3. Make sure Railway assigns a `PORT` value; the container now starts an HTTP server on that port automatically.
+4. Use Railway’s generated public URL after the deploy finishes.
 
 ---
 
