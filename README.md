@@ -178,6 +178,8 @@ When deploying to Railway:
 2. Provide the database and secret environment variables, including `APP_SECRET`, `DATABASE_URL`, `MYSQL_USER`, `MYSQL_PASSWORD`, `MYSQL_DATABASE`, and `MYSQL_ROOT_PASSWORD`.
 3. Make sure Railway assigns a `PORT` value; the container now starts an HTTP server on that port automatically.
 4. Use Railway’s generated public URL after the deploy finishes.
+5. If Railway shows `GitHub Repo not found`, reconnect the GitHub integration and re-select the repository before redeploying.
+6. If you add a custom domain, create the DNS records Railway shows in its dialog and wait for propagation before verifying.
 
 ---
 
