@@ -1,35 +1,36 @@
-FROM php:8.3-fpm-alpine
+FROM php:8.2-apache
+
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
+    git \
+    unzip \
+    zip \
+    libicu-dev \
+    libzip-dev \
+    zlib1g-dev \
+    libonig-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN docker-php-ext-install intl pdo pdo_mysql zip opcache
+
+# Install Composer binary from the official Composer image
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 WORKDIR /var/www/html
 
-# Install system packages and required PHP extensions for Symfony + MySQL.
-RUN apk add --no-cache \
-    bash \
-    git \
-    icu-dev \
-    libzip-dev \
-    oniguruma-dev \
-    unzip \
- && docker-php-ext-install -j"$(nproc)" intl pdo pdo_mysql opcache
+# Allow Composer plugins (symfony/flex) to run as root
+ENV COMPOSER_ALLOW_SUPERUSER=1
 
-# Install Composer from the official image.
-COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
-
-ENV APP_ENV=prod
-ENV APP_DEBUG=0
-
-# Copy dependency manifests first to leverage Docker layer cache.
-COPY composer.json composer.lock symfony.lock* ./
-
-# Copy the full project before Composer runs so Symfony auto-scripts can use bin/console.
 COPY . .
 
+ENV COMPOSER_ALLOW_SUPERUSER=1
+
+# Install PHP dependencies
 RUN composer install --no-dev --prefer-dist --no-interaction --no-progress --optimize-autoloader
 
-# Ensure runtime folders are writable by php-fpm user.
-RUN mkdir -p var/cache var/log var/share \
- && chown -R www-data:www-data var \
- && chmod +x entrypoint.sh
+# Enable Apache rewrite and force a single MPM for Apache startup
+RUN a2dismod mpm_event mpm_worker || true \
+    && a2enmod mpm_prefork rewrite
 
-ENTRYPOINT ["/var/www/html/entrypoint.sh"]
-CMD ["php-fpm"]
+EXPOSE 8080
+
+CMD ["apache2-foreground"]
