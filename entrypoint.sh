@@ -4,6 +4,13 @@ set -e
 cd /var/www/html
 
 # Wait for the database to accept TCP connections before running migrations.
+# If DB_HOST/DB_PORT aren't set but DATABASE_URL is, extract host/port from it.
+if [ -z "$DB_HOST" ] && [ -n "$DATABASE_URL" ]; then
+  DB_HOST=$(php -r '$u=getenv("DATABASE_URL"); $p=parse_url($u); echo $p["host"] ?? "";')
+  DB_PORT=$(php -r '$u=getenv("DATABASE_URL"); $p=parse_url($u); echo $p["port"] ?? "3306";')
+  export DB_HOST DB_PORT
+fi
+
 if [ -n "$DB_HOST" ] && [ -n "$DB_PORT" ]; then
   echo "Waiting for database at ${DB_HOST}:${DB_PORT}..."
   i=0
