@@ -3,6 +3,16 @@ set -e
 
 cd /var/www/html
 
+# If dependencies are missing (e.g. built image lost vendor), install them so bin/console works.
+if [ ! -f vendor/autoload.php ]; then
+  echo "vendor/autoload.php missing — running composer install..."
+  if command -v composer >/dev/null 2>&1; then
+    composer install --no-dev --prefer-dist --no-interaction --no-progress --optimize-autoloader
+  else
+    echo "composer not available; cannot install dependencies."
+  fi
+fi
+
 # Wait for the database to accept TCP connections before running migrations.
 # If DB_HOST/DB_PORT aren't set but DATABASE_URL is, extract host/port from it.
 if [ -z "$DB_HOST" ] && [ -n "$DATABASE_URL" ]; then
