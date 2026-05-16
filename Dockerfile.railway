@@ -17,6 +17,9 @@ COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 WORKDIR /var/www/html
 
+# Allow Composer plugins (symfony/flex) to run as root
+ENV COMPOSER_ALLOW_SUPERUSER=1
+
 # Copy project files into container
 COPY . .
 
