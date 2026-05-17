@@ -1,4 +1,4 @@
-FROM php:8.2-apache
+FROM php:8.2-fpm
 
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
     git \
