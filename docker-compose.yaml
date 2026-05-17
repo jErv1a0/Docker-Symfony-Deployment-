@@ -55,23 +55,6 @@ services:
     networks:
       - backend
 
-  phpmyadmin:
-    image: phpmyadmin:5.2-apache
-    depends_on:
-      database:
-        condition: service_healthy
-    environment:
-      PMA_HOST: database
-      PMA_USER: ${MYSQL_USER:-app}
-      PMA_PASSWORD: ${MYSQL_PASSWORD:-ChangeMe!}
-      PMA_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-RootChangeMe!}
-      PMA_DATABASE: ${MYSQL_DATABASE:-app}
-    ports:
-      - "8081:80"
-    restart: unless-stopped
-    networks:
-      - backend
-
 volumes:
   db_data:
 
