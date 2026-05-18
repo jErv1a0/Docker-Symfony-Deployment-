@@ -7,6 +7,18 @@ export PORT="${PORT:-80}"
 
 envsubst '$PORT' < /var/www/html/nginx.conf > /etc/nginx/conf.d/default.conf
 
+# Start PHP-FPM immediately so the container can answer requests even if
+# cache warmup or migrations fail because the database is slow or misconfigured.
+php-fpm -D
+
+(
+  echo "Running Symfony cache warmup..."
+  php bin/console cache:clear --env=${APP_ENV:-prod} --no-debug || true
+
+  echo "Running Doctrine migrations..."
+  php bin/console doctrine:migrations:migrate --no-interaction --allow-no-migration || true
+) &
+
 # If dependencies are missing (e.g. built image lost vendor), install them so bin/console works.
 if [ ! -f vendor/autoload.php ]; then
   echo "vendor/autoload.php missing — running composer install..."
@@ -16,39 +28,4 @@ if [ ! -f vendor/autoload.php ]; then
     echo "composer not available; cannot install dependencies."
   fi
 fi
-
-# Wait for the database to accept TCP connections before running migrations.
-# If DB_HOST/DB_PORT aren't set but DATABASE_URL is, extract host/port from it.
-if [ -z "$DB_HOST" ] && [ -n "$DATABASE_URL" ]; then
-  DB_HOST=$(php -r '$u=getenv("DATABASE_URL"); $p=parse_url($u); echo $p["host"] ?? "";')
-  DB_PORT=$(php -r '$u=getenv("DATABASE_URL"); $p=parse_url($u); echo $p["port"] ?? "3306";')
-  export DB_HOST DB_PORT
-fi
-
-if [ -n "$DB_HOST" ] && [ -n "$DB_PORT" ]; then
-  echo "Waiting for database at ${DB_HOST}:${DB_PORT}..."
-  i=0
-  until php -r '
-    $h = getenv("DB_HOST");
-    $p = (int) getenv("DB_PORT");
-    $s = @fsockopen($h, $p, $errno, $errstr, 2);
-    if ($s) {
-      fclose($s);
-      exit(0);
-    }
-    exit(1);
-  '; do
-    i=$((i + 1))
-    if [ "$i" -ge 30 ]; then
-      echo "Database is not reachable after 60 seconds."
-      exit 1
-    fi
-    sleep 2
-  done
-fi
-
-php bin/console cache:clear --env=${APP_ENV:-prod} --no-debug
-php bin/console doctrine:migrations:migrate --no-interaction --allow-no-migration
-
-php-fpm -D
 exec nginx -g 'daemon off;'

@@ -169,13 +169,12 @@ To remove database volumes and start fresh:
 ### What Happens on Startup
 
 When the `app` container starts:
-1. Waits for database connection (timeout: ~60 seconds)
-2. Clears Symfony cache for production mode
-3. **Automatically runs database migrations** (Doctrine Migrations)
-4. Nginx is rendered to listen on the active `PORT` value
-5. PHP-FPM starts and Nginx routes traffic to it in local Docker Compose and on Railway
+1. Renders Nginx to listen on the active `PORT` value
+2. Starts PHP-FPM immediately so the app can answer requests
+3. Runs Symfony cache warmup in the background
+4. Runs Doctrine migrations in the background and logs any failures without stopping the app
 
-No additional setup is needed—migrations run automatically.
+No additional setup is needed for the web process to start; migrations are attempted automatically in the background.
 
 ### Railway Deployment
 
@@ -196,6 +195,12 @@ Use your Railway MySQL service values, not the local no-password setup:
 - `APP_DEBUG=0`
 - `APP_SECRET=<your-production-secret>`
 - `DATABASE_URL=mysql://<user>:<password>@<host>:<port>/<database>?serverVersion=8.0.32&charset=utf8mb4`
+
+Important:
+
+- Replace every placeholder with a real value before saving the variable.
+- Do not include the angle brackets in Railway.
+- If the password contains special characters such as `@`, `#`, `?`, or `:`, URL-encode it before putting it in `DATABASE_URL`.
 
 If Railway gives separate MySQL variables, map them to the same values used in `DATABASE_URL`.
 
