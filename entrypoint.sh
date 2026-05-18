@@ -5,6 +5,7 @@ cd /var/www/html
 
 export PORT="${PORT:-80}"
 
+rm -f /etc/nginx/sites-enabled/default /etc/nginx/conf.d/default.conf
 envsubst '$PORT' < /var/www/html/nginx.conf > /etc/nginx/conf.d/default.conf
 
 # Start PHP-FPM immediately so the container can answer requests even if

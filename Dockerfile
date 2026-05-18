@@ -24,6 +24,7 @@ RUN composer install --no-dev --optimize-autoloader
 
 # Permissions
 RUN chown -R www-data:www-data /var/www/html
+RUN rm -f /etc/nginx/sites-enabled/default /etc/nginx/conf.d/default.conf
 RUN sed -i 's/\r$//' /var/www/html/entrypoint.sh && chmod +x /var/www/html/entrypoint.sh
 
 EXPOSE 80
