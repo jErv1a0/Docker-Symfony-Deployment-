@@ -20,8 +20,14 @@ ENV COMPOSER_ALLOW_SUPERUSER=1
 
 RUN composer install --no-dev --optimize-autoloader
 
+# Enable rewrite
 RUN a2enmod rewrite
 
+# FIX MPM CONFLICT
+RUN a2dismod mpm_event
+RUN a2enmod mpm_prefork
+
+# Symfony public folder
 RUN sed -i 's!/var/www/html!/var/www/html/public!g' /etc/apache2/sites-available/000-default.conf
 
 EXPOSE 80
