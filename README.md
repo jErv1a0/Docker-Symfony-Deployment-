@@ -59,11 +59,10 @@ The project now includes the required deployment files:
 
 And the container architecture is:
 
-- web: Nginx reverse proxy on port 8080
-- app: Nginx + PHP-FPM Symfony application container
+- app: Nginx + PHP-FPM Symfony application container on port 8080 locally and Railway's assigned port in production
 - database: MySQL 8 container on port 3310 (host) / 3306 (container)
 
-For Railway deployments, Railway should build the root Dockerfile directly and run the Nginx + PHP-FPM container on the platform-assigned port.
+For Railway deployments, Railway should build the root Dockerfile directly and the container now binds Nginx to the platform-assigned `PORT`.
 
 ---
 
@@ -164,8 +163,8 @@ When the `app` container starts:
 1. Waits for database connection (timeout: ~60 seconds)
 2. Clears Symfony cache for production mode
 3. **Automatically runs database migrations** (Doctrine Migrations)
-4. Nginx starts and forwards PHP requests to PHP-FPM
-5. Nginx routes traffic to PHP-FPM in local Docker Compose and on Railway
+4. Nginx is rendered to listen on the active `PORT` value
+5. PHP-FPM starts and Nginx routes traffic to it in local Docker Compose and on Railway
 
 No additional setup is needed—migrations run automatically.
 
@@ -175,7 +174,7 @@ When deploying to Railway:
 
 1. Set the service to use this repository and let Railway build the Dockerfile.
 2. Provide the database and secret environment variables, including `APP_SECRET`, `DATABASE_URL`, `MYSQL_USER`, `MYSQL_PASSWORD`, `MYSQL_DATABASE`, and `MYSQL_ROOT_PASSWORD`.
-3. Make sure Railway assigns a `PORT` value for the service mapping.
+3. Make sure Railway assigns a `PORT` value for the service mapping; Nginx now listens on that port automatically.
 4. Use Railway’s generated public URL after the deploy finishes.
 5. If Railway shows `GitHub Repo not found`, reconnect the GitHub integration and re-select the repository before redeploying.
 6. If you add a custom domain, create the DNS records Railway shows in its dialog and wait for propagation before verifying.

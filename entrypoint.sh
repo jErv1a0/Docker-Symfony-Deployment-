@@ -3,6 +3,10 @@ set -e
 
 cd /var/www/html
 
+export PORT="${PORT:-80}"
+
+envsubst '$PORT' < /var/www/html/nginx.conf > /etc/nginx/conf.d/default.conf
+
 # If dependencies are missing (e.g. built image lost vendor), install them so bin/console works.
 if [ ! -f vendor/autoload.php ]; then
   echo "vendor/autoload.php missing — running composer install..."
@@ -46,9 +50,5 @@ fi
 php bin/console cache:clear --env=${APP_ENV:-prod} --no-debug
 php bin/console doctrine:migrations:migrate --no-interaction --allow-no-migration
 
-if [ -n "$PORT" ]; then
-  echo "Starting built-in PHP server on 0.0.0.0:${PORT} for platform deployment..."
-  exec php -S 0.0.0.0:${PORT} -t public router.php
-fi
-
-exec "$@"
+php-fpm -D
+exec nginx -g 'daemon off;'

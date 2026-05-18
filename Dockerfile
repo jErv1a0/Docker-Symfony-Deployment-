@@ -2,6 +2,7 @@ FROM php:8.2-fpm
 
 RUN apt-get update && apt-get install -y \
     nginx \
+    gettext-base \
     git \
     unzip \
     zip \
@@ -21,12 +22,10 @@ ENV COMPOSER_ALLOW_SUPERUSER=1
 
 RUN composer install --no-dev --optimize-autoloader
 
-# Configure nginx
-COPY nginx.conf /etc/nginx/sites-available/default
-
 # Permissions
 RUN chown -R www-data:www-data /var/www/html
+RUN sed -i 's/\r$//' /var/www/html/entrypoint.sh && chmod +x /var/www/html/entrypoint.sh
 
 EXPOSE 80
 
-CMD service nginx start && php-fpm
+ENTRYPOINT ["/var/www/html/entrypoint.sh"]

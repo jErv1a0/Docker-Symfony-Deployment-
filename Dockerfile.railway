@@ -1,6 +1,8 @@
-FROM php:8.2-apache
+FROM php:8.2-fpm
 
-RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
+RUN apt-get update && apt-get install -y \
+    nginx \
+    gettext-base \
     git \
     unzip \
     zip \
@@ -8,30 +10,20 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
     libzip-dev \
     zlib1g-dev \
     libonig-dev \
-    && rm -rf /var/lib/apt/lists/*
+    && docker-php-ext-install intl pdo pdo_mysql zip opcache
 
-RUN docker-php-ext-install intl pdo pdo_mysql zip opcache
-
-# Install Composer binary from the official Composer image
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 WORKDIR /var/www/html
 
-# Allow Composer plugins (symfony/flex) to run as root
-ENV COMPOSER_ALLOW_SUPERUSER=1
-
-# Copy project files into container
 COPY . .
 
 ENV COMPOSER_ALLOW_SUPERUSER=1
 
-# Install PHP dependencies
-RUN composer install --no-dev --prefer-dist --no-interaction --no-progress --optimize-autoloader
+RUN composer install --no-dev --optimize-autoloader
 
-# Enable Apache rewrite and force a single MPM for Apache startup
-RUN a2dismod mpm_event mpm_worker || true \
-    && a2enmod mpm_prefork rewrite
+RUN sed -i 's/\r$//' /var/www/html/entrypoint.sh && chmod +x /var/www/html/entrypoint.sh
 
-EXPOSE 8080
+EXPOSE 80
 
-CMD ["apache2-foreground"]
+ENTRYPOINT ["/var/www/html/entrypoint.sh"]
