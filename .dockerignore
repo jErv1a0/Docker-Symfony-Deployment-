@@ -1,6 +1,5 @@
 vendor
 node_modules
 .git
-.env
 var/cache
 var/log
