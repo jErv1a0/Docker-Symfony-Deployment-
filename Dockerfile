@@ -22,6 +22,9 @@ ENV COMPOSER_ALLOW_SUPERUSER=1
 
 RUN composer install --no-dev --optimize-autoloader
 
+RUN sed -i 's|^listen = .*|listen = 127.0.0.1:9000|' /usr/local/etc/php-fpm.d/www.conf \
+    && sed -i 's|^;listen.allowed_clients = .*|listen.allowed_clients = 127.0.0.1|' /usr/local/etc/php-fpm.d/www.conf
+
 # Permissions
 RUN chown -R www-data:www-data /var/www/html
 RUN rm -f /etc/nginx/sites-enabled/default /etc/nginx/conf.d/default.conf
