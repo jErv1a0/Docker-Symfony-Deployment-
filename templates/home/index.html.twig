@@ -19,7 +19,11 @@
 			</div>
 
 			<div class="badge">
-				Database status is checked in the product module
+				{% if db_working %}
+					✅ Database connection is working
+				{% else %}
+					❌ Database connection failed
+				{% endif %}
 			</div>
 
 			<p class="footer-text">

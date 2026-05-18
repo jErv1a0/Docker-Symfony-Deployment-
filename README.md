@@ -254,7 +254,7 @@ The `debug:router` command verifies that all routes are properly registered.
 
 ### Error: The "MYSQL_USER" variable is not set. Defaulting to a blank string
 
-**Cause:** Environment variables referenced in `DATABASE_URL` but not defined in `.env`.
+**Cause:** Local Docker Compose environment variables referenced in `.env` are not defined.
 
 **Fix:** Ensure `.env` contains:
 
@@ -262,6 +262,8 @@ The `debug:router` command verifies that all routes are properly registered.
     MYSQL_PASSWORD=!ChangeMe!
     MYSQL_DATABASE=app
     MYSQL_ROOT_PASSWORD=RootChangeMe!
+
+**Railway note:** The app service should use `DATABASE_URL` directly from Railway MySQL values. Do not copy these local-only `MYSQL_*` placeholders into Railway.
 
 ---
 
@@ -294,14 +296,15 @@ The `debug:router` command verifies that all routes are properly registered.
     docker compose exec app php bin/console cache:clear --env=prod
 
 2. **Nginx not routing correctly:**
-   - Check that `nginx.conf` has `fastcgi_pass app:9000;` (correct internal hostname)
+    - Check that `nginx.conf` has `fastcgi_pass 127.0.0.1:9000;` for the single-container Nginx + PHP-FPM runtime
    - Verify Nginx config is valid:
 
     docker compose logs web | head -20
 
 3. **Database connection issue:**
-   - Verify DATABASE_URL in docker-compose.yaml uses `database:3306` (not localhost)
-   - Check MySQL health:
+    - Verify `DATABASE_URL` on Railway uses the Railway MySQL host, port, database, user, and password
+    - For local Docker Compose, the app container uses the internal `database:3306` hostname
+    - Check MySQL health locally:
 
     docker compose ps database
 
@@ -340,7 +343,7 @@ DATABASE_URL=mysql://<user>@<host>:<port>/<database>?serverVersion=8.0.32&charse
 
 - The database uses MySQL 8.0 with `mysql_native_password` plugin (compatible with Doctrine)
 - Nginx listens on port 80 (mapped to 8080 locally, use platform's default port in production)
-- Database is accessible internally as `database:3306` within the Docker network
+- Database is accessible internally as `database:3306` within local Docker Compose only
 - Migrations are executed automatically during container startup
 
 ---
