@@ -201,6 +201,9 @@ Important:
 - Replace every placeholder with a real value before saving the variable.
 - Do not include the angle brackets in Railway.
 - If the password contains special characters such as `@`, `#`, `?`, or `:`, URL-encode it before putting it in `DATABASE_URL`.
+- The app service must point at the Railway MySQL service, not `localhost` and not `database:3306`.
+- If Railway exposes a generated database URL or reference variable for the MySQL service, use that value for `DATABASE_URL`.
+- Keep `MYSQL_ROOT_PASSWORD` and other MySQL service-only variables on the database service, not on the app service.
 
 If Railway gives separate MySQL variables, map them to the same values used in `DATABASE_URL`.
 
@@ -314,19 +317,15 @@ Before deployment, you **MUST** set these environment variables (replace placeho
 APP_ENV=prod
 APP_DEBUG=0
 APP_SECRET=<generate-a-long-random-string-at-least-32-chars>
-MYSQL_DATABASE=app_production
-MYSQL_USER=app_user
-MYSQL_PASSWORD=<strong-random-password>
-MYSQL_ROOT_PASSWORD=<strong-random-password>
+DATABASE_URL=mysql://<user>@<host>:<port>/<database>?serverVersion=8.0.32&charset=utf8mb4
 ```
 
 ### Production Configuration Checklist
 
 - [ ] Generate secure `APP_SECRET` (use `openssl rand -base64 32` or similar)
-- [ ] Set unique `MYSQL_PASSWORD` and `MYSQL_ROOT_PASSWORD`
 - [ ] Ensure `APP_DEBUG=0` to disable debug mode
 - [ ] Ensure `APP_ENV=prod` in deployment environment
-- [ ] Configure database connectivity (Docker Compose uses `database` hostname internally)
+- [ ] Configure `DATABASE_URL` with Railway MySQL host, port, and database name
 - [ ] Verify health checks are active (MySQL health check set to 20 retries × 5s intervals)
 - [ ] Test migrations run during startup
 - [ ] Confirm Nginx successfully routes requests to PHP-FPM
@@ -401,10 +400,7 @@ Click on the **App** service and go to **Variables**. Add these:
 | `APP_ENV` | `prod` | **MUST** be prod |
 | `APP_DEBUG` | `0` | **MUST** be 0 for security |
 | `APP_SECRET` | `[generate-long-random-value]` | Generate with: `openssl rand -base64 32` |
-| `MYSQL_DATABASE` | `app_production` | Database name |
-| `MYSQL_USER` | `app_user` | DB user |
-| `MYSQL_PASSWORD` | `[strong-random-value]` | Random strong password |
-| `MYSQL_ROOT_PASSWORD` | `[strong-random-value]` | Random strong password |
+| `DATABASE_URL` | `mysql://<user>@<host>:<port>/<database>?serverVersion=8.0.32&charset=utf8mb4` | Railway app service DB connection |
 
 ### Step 5: Deploy
 
