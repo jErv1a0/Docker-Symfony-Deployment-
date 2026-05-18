@@ -61,6 +61,7 @@ And the container architecture is:
 
 - app: Nginx + PHP-FPM Symfony application container on port 8080 locally and Railway's assigned port in production
 - database: MySQL 8 container on port 3310 (host) / 3306 (container)
+- phpMyAdmin: database UI on port 8081 for local inspection and manual testing
 
 For Railway deployments, Railway should build the root Dockerfile directly and the container now binds Nginx to the platform-assigned `PORT`.
 
@@ -145,11 +146,19 @@ Keeps sensitive information out of the codebase and allows flexible configuratio
 
     Open http://localhost:8080 in your browser.
 
-5. **View application logs** (if needed):
+5. **Open phpMyAdmin**:
+
+    Open http://localhost:8081 and log in with:
+
+    username: root
+
+    password: leave blank
+
+6. **View application logs** (if needed):
 
     docker compose logs -f app
 
-6. **Stop containers when finished**:
+7. **Stop containers when finished**:
 
     docker compose down
 
@@ -173,11 +182,22 @@ No additional setup is needed—migrations run automatically.
 When deploying to Railway:
 
 1. Set the service to use this repository and let Railway build the Dockerfile.
-2. Provide the database and secret environment variables, including `APP_SECRET`, `DATABASE_URL`, `MYSQL_USER`, `MYSQL_PASSWORD`, `MYSQL_DATABASE`, and `MYSQL_ROOT_PASSWORD`.
+2. Provide the database and secret environment variables below.
 3. Make sure Railway assigns a `PORT` value for the service mapping; Nginx now listens on that port automatically.
 4. Use Railway’s generated public URL after the deploy finishes.
 5. If Railway shows `GitHub Repo not found`, reconnect the GitHub integration and re-select the repository before redeploying.
 6. If you add a custom domain, create the DNS records Railway shows in its dialog and wait for propagation before verifying.
+
+### Railway Variables
+
+Use your Railway MySQL service values, not the local no-password setup:
+
+- `APP_ENV=prod`
+- `APP_DEBUG=0`
+- `APP_SECRET=<your-production-secret>`
+- `DATABASE_URL=mysql://<user>:<password>@<host>:<port>/<database>?serverVersion=8.0.32&charset=utf8mb4`
+
+If Railway gives separate MySQL variables, map them to the same values used in `DATABASE_URL`.
 
 ---
 
