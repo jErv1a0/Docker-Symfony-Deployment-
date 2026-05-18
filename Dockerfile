@@ -23,11 +23,16 @@ RUN composer install --no-dev --optimize-autoloader
 # Enable rewrite
 RUN a2enmod rewrite
 
-# FIX MPM CONFLICT
-RUN a2dismod mpm_event
+# REMOVE conflicting MPM modules manually
+RUN rm -f /etc/apache2/mods-enabled/mpm_event.load
+RUN rm -f /etc/apache2/mods-enabled/mpm_event.conf
+RUN rm -f /etc/apache2/mods-enabled/mpm_worker.load
+RUN rm -f /etc/apache2/mods-enabled/mpm_worker.conf
+
+# ENSURE prefork is enabled
 RUN a2enmod mpm_prefork
 
-# Symfony public folder
+# Symfony public directory
 RUN sed -i 's!/var/www/html!/var/www/html/public!g' /etc/apache2/sites-available/000-default.conf
 
 EXPOSE 80
