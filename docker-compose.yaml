@@ -11,7 +11,8 @@ services:
       APP_SECRET: ${APP_SECRET:-ChangeThisSecretInProduction}
       DB_HOST: database
       DB_PORT: 3306
-      DATABASE_URL: mysql://root@database:3306/${MYSQL_DATABASE:-app}?serverVersion=8.0.32&charset=utf8mb4
+      # Use the root password from the database service for local compose
+      DATABASE_URL: mysql://root:${MYSQL_ROOT_PASSWORD:-root}@database:3306/${MYSQL_DATABASE:-app}?serverVersion=8.0.32&charset=utf8mb4
     depends_on:
       database:
         condition: service_healthy
@@ -26,7 +27,8 @@ services:
     command: --default-authentication-plugin=mysql_native_password
     environment:
       MYSQL_DATABASE: ${MYSQL_DATABASE:-app}
-      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+      # For local development we set a root password so the app can connect reliably
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
     ports:
       - "3310:3306"
     healthcheck:
@@ -50,7 +52,7 @@ services:
       PMA_HOST: database
       PMA_PORT: 3306
       PMA_USER: root
-      PMA_PASSWORD: ""
+      PMA_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
     ports:
       - "8081:80"
     restart: unless-stopped
