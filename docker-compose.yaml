@@ -43,22 +43,6 @@ services:
     networks:
       - backend
 
-  phpmyadmin:
-    image: phpmyadmin/phpmyadmin:latest
-    depends_on:
-      database:
-        condition: service_healthy
-    environment:
-      PMA_HOST: database
-      PMA_PORT: 3306
-      PMA_USER: root
-      PMA_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
-    ports:
-      - "8081:80"
-    restart: unless-stopped
-    networks:
-      - backend
-
 volumes:
   db_data:
 
