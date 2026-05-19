@@ -19,13 +19,16 @@ WORKDIR /var/www/html
 COPY . .
 
 ENV COMPOSER_ALLOW_SUPERUSER=1
+ENV APP_ENV=prod
+ENV APP_DEBUG=0
 
-RUN composer install --no-dev --optimize-autoloader --no-scripts --no-interaction --no-progress
+# --no-scripts prevents Symfony post-install hooks from running at build time
+# (they need env vars that only exist at runtime)
+RUN composer install --no-dev --optimize-autoloader --no-interaction --no-progress --no-scripts
 
 RUN sed -i 's|^listen = .*|listen = 127.0.0.1:9000|' /usr/local/etc/php-fpm.d/www.conf \
     && sed -i 's|^;listen.allowed_clients = .*|listen.allowed_clients = 127.0.0.1|' /usr/local/etc/php-fpm.d/www.conf
 
-# Permissions
 RUN chown -R www-data:www-data /var/www/html
 RUN rm -f /etc/nginx/sites-enabled/default /etc/nginx/conf.d/default.conf
 RUN sed -i 's/\r$//' /var/www/html/entrypoint.sh && chmod +x /var/www/html/entrypoint.sh
