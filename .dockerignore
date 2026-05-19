@@ -4,4 +4,5 @@ node_modules
 var/cache
 var/log
 .env
-.env.*
+.env.local
+.env.*.local
