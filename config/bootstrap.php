@@ -65,7 +65,10 @@ if (is_file(dirname(__DIR__).'/.env.local.php')) {
 }
 
 if (!isset($_SERVER['APP_ENV']) && !isset($_ENV['APP_ENV']) && class_exists(Dotenv::class)) {
-    (new Dotenv())->bootEnv(dirname(__DIR__).'/.env');
+    $envFile = dirname(__DIR__).'/.env';
+    if (is_file($envFile)) {
+        (new Dotenv())->bootEnv($envFile);
+    }
 }
 
 $_SERVER['APP_ENV'] = $_SERVER['APP_ENV'] ?? $_ENV['APP_ENV'] ?? 'dev';
