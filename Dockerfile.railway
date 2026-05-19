@@ -23,9 +23,14 @@ COPY nginx-main.conf /etc/nginx/nginx.conf
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 ENV COMPOSER_ALLOW_SUPERUSER=1
+ENV APP_ENV=prod
+ENV APP_DEBUG=0
 
-# ✅ Run with scripts so Symfony post-install hooks fire
-RUN composer install --no-dev --optimize-autoloader --no-interaction --no-progress
+# Build-time fallback so Symfony Dotenv can load if scripts are ever triggered.
+RUN printf 'APP_ENV=prod\nAPP_DEBUG=0\n' > .env
+
+# Install dependencies without running Symfony auto-scripts at build time.
+RUN composer install --no-dev --optimize-autoloader --no-interaction --no-progress --no-scripts
 
 RUN sed -i 's|^listen = .*|listen = 127.0.0.1:9000|' /usr/local/etc/php-fpm.d/www.conf \
     && sed -i 's|^;listen.allowed_clients = .*|listen.allowed_clients = 127.0.0.1|' /usr/local/etc/php-fpm.d/www.conf
