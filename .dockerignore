@@ -6,3 +6,4 @@ var/log
 .env
 .env.local
 .env.*.local
+.env.local.php        # ← ADD THIS — this is your root cause
