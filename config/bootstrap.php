@@ -45,6 +45,12 @@ if (null === $databaseUrl || $databaseUrlIsPlaceholder) {
     }
 }
 
+// If DATABASE_URL uses localhost, replace with 127.0.0.1 to force TCP (avoid UNIX socket).
+if (isset($databaseUrl) && str_contains((string) $databaseUrl, '@localhost')) {
+    $databaseUrl = preg_replace('/@localhost(?=[:\/])/', '@127.0.0.1', $databaseUrl);
+    $_ENV['DATABASE_URL'] = $_SERVER['DATABASE_URL'] = $databaseUrl;
+}
+
 // Fall back to the compiled env only when a value is not already provided.
 if (is_file(dirname(__DIR__).'/.env.local.php')) {
     $compiledEnv = include dirname(__DIR__).'/.env.local.php';
