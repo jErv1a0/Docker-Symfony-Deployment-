@@ -14,12 +14,17 @@ final class Version20260511172505 extends AbstractMigration
 {
     public function getDescription(): string
     {
-        return '';
+        return 'Add description column to product table';
     }
 
     public function up(Schema $schema): void
     {
-        // this up() migration is auto-generated, please modify it to your needs
+        $platformClass = strtolower($this->connection->getDatabasePlatform()::class);
+
+        if (!str_contains($platformClass, 'sqlite') && !str_contains($platformClass, 'mysql')) {
+            $this->abortIf(true, sprintf('Unsupported database platform: %s', $platformClass));
+        }
+
         $this->addSql('ALTER TABLE product ADD description VARCHAR(255) NOT NULL');
     }
 

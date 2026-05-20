@@ -1,4 +1,4 @@
-#!/usr/bin/env sh
+﻿#!/bin/sh
 set -e
 
 cd /var/www/html
@@ -65,34 +65,35 @@ php bin/console cache:warmup \
   --env=$APP_ENV \
   --no-debug || true
 
-# Run migrations in background with retries
+# Run migrations in foreground with retries so app doesn't serve 500 before schema is ready
 echo "Running Doctrine migrations..."
 
-(
-  MAX_RETRIES=60
-  COUNT=0
+MAX_RETRIES=60
+COUNT=0
+MIGRATED=0
 
-  while true; do
-    if php bin/console doctrine:migrations:migrate \
-      --no-interaction \
-      --allow-no-migration; then
+while [ "$COUNT" -lt "$MAX_RETRIES" ]; do
+  if php bin/console doctrine:migrations:sync-metadata-storage --no-interaction >/dev/null 2>&1; then
+    :
+  fi
 
-      echo "Migrations completed."
-      break
-    fi
+  if php bin/console doctrine:migrations:migrate \
+    --no-interaction \
+    --allow-no-migration; then
+    MIGRATED=1
+    echo "Migrations completed."
+    break
+  fi
 
-    COUNT=$((COUNT+1))
+  COUNT=$((COUNT+1))
+  echo "Database unavailable or migration failed ($COUNT/$MAX_RETRIES)..."
+  sleep 2
+done
 
-    echo "Database unavailable or migration failed ($COUNT/$MAX_RETRIES)..."
-
-    if [ "$COUNT" -ge "$MAX_RETRIES" ]; then
-      echo "Migration retries exceeded. Continuing startup."
-      break
-    fi
-
-    sleep 2
-  done
-) &
+if [ "$MIGRATED" -ne 1 ]; then
+  echo "ERROR: Could not apply migrations after $MAX_RETRIES retries. Exiting to avoid serving broken app."
+  exit 1
+fi
 
 # Start nginx
 echo "Starting Nginx..."
