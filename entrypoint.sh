@@ -6,6 +6,7 @@ cd /var/www/html
 export PORT="${PORT:-80}"
 export APP_ENV="${APP_ENV:-prod}"
 export APP_DEBUG="${APP_DEBUG:-0}"
+export DEFAULT_URI="${DEFAULT_URI:-http://localhost}"
 
 echo "Starting container..."
 
@@ -15,6 +16,7 @@ if [ ! -f .env ]; then
   cat > .env <<EOF
 APP_ENV=$APP_ENV
 APP_DEBUG=$APP_DEBUG
+DEFAULT_URI=$DEFAULT_URI
 EOF
 fi
 

@@ -8,11 +8,12 @@ services:
     environment:
       APP_ENV: prod
       APP_DEBUG: 0
+      DEFAULT_URI: http://localhost
       APP_SECRET: ${APP_SECRET:-ChangeThisSecretInProduction}
       DB_HOST: database
       DB_PORT: 3306
-      # Use the root password from the database service for local compose
-      DATABASE_URL: mysql://root:${MYSQL_ROOT_PASSWORD:-root}@database:3306/${MYSQL_DATABASE:-app}?serverVersion=8.0.32&charset=utf8mb4
+      # Prefer DATABASE_URL from .env, but keep a local fallback for compose runs
+      DATABASE_URL: ${DATABASE_URL:-mysql://root:${MYSQL_ROOT_PASSWORD:-root}@database:3306/${MYSQL_DATABASE:-app}?serverVersion=8.0.32&charset=utf8mb4}
     depends_on:
       database:
         condition: service_healthy
