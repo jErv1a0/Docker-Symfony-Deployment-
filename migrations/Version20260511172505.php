@@ -21,11 +21,11 @@ final class Version20260511172505 extends AbstractMigration
     {
         $platformClass = strtolower($this->connection->getDatabasePlatform()::class);
 
-        if (!str_contains($platformClass, 'sqlite') && !str_contains($platformClass, 'mysql')) {
+        if (!str_contains($platformClass, 'sqlite') && !str_contains($platformClass, 'mysql') && !str_contains($platformClass, 'postgres')) {
             $this->abortIf(true, sprintf('Unsupported database platform: %s', $platformClass));
         }
 
-        $this->addSql('ALTER TABLE product ADD description VARCHAR(255) NOT NULL');
+        $this->addSql("ALTER TABLE product ADD description VARCHAR(255) NOT NULL DEFAULT ''");
     }
 
     public function down(Schema $schema): void
