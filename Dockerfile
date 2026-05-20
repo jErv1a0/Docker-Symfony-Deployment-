@@ -54,6 +54,8 @@ RUN if [ ! -f .env ]; then \
 # Configure PHP-FPM to listen on TCP
 RUN sed -i 's|^listen = .*|listen = 127.0.0.1:9000|' /usr/local/etc/php-fpm.d/www.conf \
     && sed -i 's|^;listen.allowed_clients = .*|listen.allowed_clients = 127.0.0.1|' /usr/local/etc/php-fpm.d/www.conf
+# Ensure PHP-FPM preserves environment variables passed from Docker
+RUN sed -i "s|^;*\s*clear_env\s*=.*|clear_env = no|" /usr/local/etc/php-fpm.d/www.conf || echo "clear_env = no" >> /usr/local/etc/php-fpm.d/www.conf
 
 # Remove default nginx config
 RUN rm -f /etc/nginx/sites-enabled/default \

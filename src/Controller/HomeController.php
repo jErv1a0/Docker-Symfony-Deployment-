@@ -22,9 +22,16 @@ final class HomeController extends AbstractController
             $dbWorking = false;
         }
 
-        return $this->render('home/index.html.twig', [
+        $response = $this->render('home/index.html.twig', [
             'controller_name' => 'HomeController',
             'db_working' => $dbWorking,
         ]);
+
+        $response->headers->addCacheControlDirective('no-store', true);
+        $response->headers->addCacheControlDirective('no-cache', true);
+        $response->headers->addCacheControlDirective('must-revalidate', true);
+        $response->headers->set('Pragma', 'no-cache');
+
+        return $response;
     }
 }
